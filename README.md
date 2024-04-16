@@ -17,10 +17,10 @@ Ce programme permet de parcourir une photo, extraire les données GPS de ses mé
 ## Installation
 
 1. Clonez ce dépôt :
-git clone https://github.com/votre-utilisateur/GENEPIX-Geolocalisation.git
+git clone https://github.com/BreakingTechFr/GeolocExif.git
 
 2. Accédez au répertoire du projet :
-cd GENEPIX-Geolocalisation
+cd GeolocExif
 
 3. Créez un environnement virtuel avec Python 3.6 :
 python3.6 -m venv virtual3.6
@@ -46,7 +46,7 @@ pip install -r requirements.txt
 Exécutez le script `geoexif.py` :
 python geoexif.py
 
-- Cliquez sur le bouton "Parcourir une photo..." pour sélectionner une photo.
+- Cliquez sur le bouton "Choisir une photo..." pour sélectionner une photo.
 - Une fois la photo sélectionnée, cliquez sur le bouton "Geolocaliser" pour ouvrir une carte Google Maps montrant l'emplacement géographique de la photo.
 
 ## Auteur
