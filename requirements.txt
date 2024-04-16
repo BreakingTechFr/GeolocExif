@@ -1,0 +1,3 @@
+exifread
+gpsphoto
+PySide2
