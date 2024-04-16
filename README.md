@@ -1,4 +1,4 @@
-# GENEPIX Geolocalisation
+# GeoLocExif
 
 Ce programme permet de parcourir une photo, extraire les données GPS de ses métadonnées EXIF et ouvrir une carte Google Maps affichant l'emplacement géographique de la photo.
 
