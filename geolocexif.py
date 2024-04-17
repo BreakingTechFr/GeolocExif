@@ -7,9 +7,10 @@ from PySide2.QtCore import Qt, QObject, Signal
 from PySide2.QtWebEngineWidgets import QWebEngineView
 import exifread
 from GPSPhoto import gpsphoto
+from pyautogui import screenshot
 
-LARGEUR_FENETRE = 1200
-HAUTEUR_FENETRE = 720
+LARGEUR_FENETRE = 1250
+HAUTEUR_FENETRE = 670
 LARGEUR_BOUTON = 340
 HAUTEUR_BOUTON = 50
 
@@ -21,33 +22,36 @@ class Fenetre(QWidget):
         super().__init__()
         self.chemin_fichier = ""
         self.setWindowTitle("BreakingTech GeoLocExif")
-        self.setGeometry(300, 300, LARGEUR_FENETRE, HAUTEUR_FENETRE)
+        self.setGeometry(200, 200, LARGEUR_FENETRE, HAUTEUR_FENETRE)
         self.principal_layout = QVBoxLayout()
+        self.principal_layout.setAlignment(Qt.AlignCenter)  # Centrer les éléments horizontalement
         self.stacked_widget = QStackedWidget()
         self.principal_layout.addWidget(self.stacked_widget)
         self.setLayout(self.principal_layout)
         self.signaux = Signaux()
-        self.signaux.afficher_donnees_exif_signal.connect(self.afficher_donnees_exif_event)
         self.creer_vue_principale()
 
     def creer_vue_principale(self):
         widget_principal = QWidget()
-        layout = QVBoxLayout()  
+        layout_principal = QVBoxLayout()
 
-        # Charger et appliquer l'icône de l'application
-        chemin_icone = os.path.join(os.path.dirname(__file__), "icone.icns")
-        icone_application = QIcon(chemin_icone)
-        self.setWindowIcon(icone_application)
+        layout_haut = QHBoxLayout()
 
-        self.lbl_logo = QLabel()
-        chemin_image = os.path.join(os.path.dirname(__file__), "img", "geolocexif.jpg")
-        self.lbl_logo.setPixmap(QPixmap(chemin_image))
-        self.lbl_logo.setAlignment(Qt.AlignCenter)  
+        # Logo geolocexif.jpg à gauche
+        logo_layout = QVBoxLayout()
+        logo_label = QLabel()
+        logo_pixmap = QPixmap("geolocexif.jpg")
+        logo_label.setPixmap(logo_pixmap)
+        logo_label.setAlignment(Qt.AlignCenter)
+        logo_layout.addWidget(logo_label)
+        layout_haut.addLayout(logo_layout)
+
+        # Image importée par l'utilisateur à droite du logo
         self.lbl_image_selectionnee = QLabel()
-        self.lbl_image_selectionnee.setAlignment(Qt.AlignCenter)
-        self.txt_infos_exif = QTextEdit()
-        self.txt_infos_exif.setStyleSheet("color: white;")
-        self.txt_infos_exif.setReadOnly(True)
+        layout_haut.addWidget(self.lbl_image_selectionnee)
+
+        layout_boutons = QVBoxLayout()
+
         self.btn_parcourir = QPushButton("Choisir une photo...")
         self.btn_parcourir.clicked.connect(self.parcourir)
         self.btn_parcourir.setStyleSheet("""
@@ -62,54 +66,104 @@ QPushButton:hover {
 }
 """)
         self.btn_parcourir.setFixedSize(LARGEUR_BOUTON, HAUTEUR_BOUTON)
-        self.btn_parcourir.setObjectName("boutonParcourir")
-        self.btn_rechercher = QPushButton("Geolocaliser")
-        self.btn_rechercher.clicked.connect(self.geolocaliser)
-        self.btn_rechercher.setFixedSize(LARGEUR_BOUTON, HAUTEUR_BOUTON)
+        layout_boutons.addWidget(self.btn_parcourir)
+
+        self.btn_geolocaliser = QPushButton("Géolocaliser")
+        self.btn_geolocaliser.clicked.connect(self.geolocaliser)
+        self.btn_geolocaliser.setFixedSize(LARGEUR_BOUTON, HAUTEUR_BOUTON)
+        layout_boutons.addWidget(self.btn_geolocaliser)
+        self.btn_geolocaliser.setEnabled(False)
+        if not self.chemin_fichier:
+            self.btn_geolocaliser.setStyleSheet("""
+QPushButton {
+    background-color: #FFFFFF;
+    color: #9F9FA0;
+    border-radius: 5px;
+}
+""")
+        
+        self.btn_sauvegarder = QPushButton("Sauvegarder les données")
+        self.btn_sauvegarder.clicked.connect(self.sauvegarder_donnees)
+        self.btn_sauvegarder.setFixedSize(LARGEUR_BOUTON, HAUTEUR_BOUTON)
+        layout_boutons.addWidget(self.btn_sauvegarder)
+        self.btn_sauvegarder.setEnabled(False)
+        if not self.chemin_fichier:
+            self.btn_sauvegarder.setStyleSheet("""
+QPushButton {
+    background-color: #FFFFFF;
+    color: #9F9FA0;
+    border-radius: 5px;
+}
+""")
+
         self.btn_quitter = QPushButton("Quitter")
         self.btn_quitter.clicked.connect(self.quitter_application)
         self.btn_quitter.setStyleSheet("""
 QPushButton {
-    background-color: #4B4F52;
+    background-color: #C92A2A;
     color: white;
     border-radius: 5px;
 }
 
 QPushButton:hover {
-    background-color: #868E96;
+    background-color: #F03E3E;
 }
 """)
         self.btn_quitter.setFixedSize(LARGEUR_BOUTON, HAUTEUR_BOUTON)
-
-        self.btn_sauvegarder = QPushButton("Sauvegarder les données")
-        self.btn_sauvegarder.clicked.connect(self.sauvegarder_donnees)
-        self.btn_sauvegarder.setFixedSize(LARGEUR_BOUTON, HAUTEUR_BOUTON)
-
-        layout.addWidget(self.lbl_logo)
-        
-        layout_image = QHBoxLayout()
-        layout_image.addWidget(self.txt_infos_exif)
-        layout_image.addWidget(self.lbl_image_selectionnee)
-        layout.addLayout(layout_image)
-
-        layout_boutons = QHBoxLayout()
-        layout_boutons.addWidget(self.btn_parcourir)
-        layout_boutons.addSpacing(20)
-        layout_boutons.addWidget(self.btn_rechercher)
-        layout_boutons.addSpacing(20)
-        layout_boutons.addWidget(self.btn_sauvegarder)
-        layout_boutons.addSpacing(20)
         layout_boutons.addWidget(self.btn_quitter)
-        layout.addLayout(layout_boutons)  
-        widget_principal.setLayout(layout)
+
+        layout_haut.addLayout(layout_boutons)
+        layout_haut.addStretch()  # Ajouter de l'espace à droite
+        layout_principal.addLayout(layout_haut)
+
+        self.txt_infos_exif_col1 = QTextEdit()
+        self.txt_infos_exif_col1.setStyleSheet("color: white;")
+        self.txt_infos_exif_col1.setReadOnly(True)
+        self.txt_infos_exif_col2 = QTextEdit()
+        self.txt_infos_exif_col2.setStyleSheet("color: white;")
+        self.txt_infos_exif_col2.setReadOnly(True)
+        self.txt_infos_exif_col3 = QTextEdit()
+        self.txt_infos_exif_col3.setStyleSheet("color: white;")
+        self.txt_infos_exif_col3.setReadOnly(True)
+        self.txt_infos_exif_col4 = QTextEdit()
+        self.txt_infos_exif_col4.setStyleSheet("color: white;")
+        self.txt_infos_exif_col4.setReadOnly(True)
+
+        layout_donnees_exif = QHBoxLayout()
+
+        layout_col1 = QVBoxLayout()
+        self.label_group1 = QLabel("Informations sur l'image", alignment=Qt.AlignCenter)
+        self.label_group1.setStyleSheet("color: white;")
+        layout_col1.addWidget(self.label_group1)
+        layout_col1.addWidget(self.txt_infos_exif_col1)
+        layout_donnees_exif.addLayout(layout_col1)
+
+        layout_col2 = QVBoxLayout()
+        self.label_group2 = QLabel("Réglages de l'appareil photo", alignment=Qt.AlignCenter)
+        self.label_group2.setStyleSheet("color: white;")
+        layout_col2.addWidget(self.label_group2)
+        layout_col2.addWidget(self.txt_infos_exif_col2)
+        layout_donnees_exif.addLayout(layout_col2)
+
+        layout_col3 = QVBoxLayout()
+        self.label_group3 = QLabel("Données temporelles", alignment=Qt.AlignCenter)
+        self.label_group3.setStyleSheet("color: white;")
+        layout_col3.addWidget(self.label_group3)
+        layout_col3.addWidget(self.txt_infos_exif_col3)
+        layout_donnees_exif.addLayout(layout_col3)
+
+        layout_col4 = QVBoxLayout()
+        self.label_group4 = QLabel("Géolocalisation", alignment=Qt.AlignCenter)
+        self.label_group4.setStyleSheet("color: white;")
+        layout_col4.addWidget(self.label_group4)
+        layout_col4.addWidget(self.txt_infos_exif_col4)
+        layout_donnees_exif.addLayout(layout_col4)
+
+        layout_principal.addLayout(layout_donnees_exif)
+
+        widget_principal.setLayout(layout_principal)
         self.stacked_widget.addWidget(widget_principal)
         self.setStyleSheet("background-color: black;")
-
-        # Griser le bouton Geolocaliser
-        self.btn_rechercher.setStyleSheet("background-color: #FFFFFF; color: #9F9FA0; border-radius: 5px;")
-        self.btn_rechercher.setEnabled(False)
-        self.btn_sauvegarder.setStyleSheet("background-color: #FFFFFF; color: #9F9FA0; border-radius: 5px;")
-        self.btn_sauvegarder.setEnabled(False)
 
     def geolocaliser(self):
         if self.chemin_fichier == "":
@@ -117,7 +171,6 @@ QPushButton:hover {
             return
 
         try:
-            # Utiliser GPSPhoto pour récupérer les coordonnées GPS de l'image
             coords = gpsphoto.getGPSData(self.chemin_fichier)
             if not coords:
                 self.afficher_message_erreur("Les coordonnées GPS ne sont pas disponibles pour cette image")
@@ -149,160 +202,177 @@ QPushButton:hover {
 """)
             self.btn_retour.setFixedSize(LARGEUR_BOUTON, HAUTEUR_BOUTON)
             layout_boutons.addWidget(self.btn_retour)
-            layout_boutons.addSpacing(20)
 
-            self.btn_screenshoot = QPushButton("Screenshoot GoogleMap")
-            self.btn_screenshoot.clicked.connect(self.screenshoot_google_map)
-            self.btn_screenshoot.setStyleSheet("""
+            self.btn_screenshot = QPushButton("Screenshot GoogleMap")
+            self.btn_screenshot.clicked.connect(self.screenshot_googlemap)
+            self.btn_screenshot.setStyleSheet("""
 QPushButton {
-    background-color: #4B4F52;
+    background-color: #099268;
     color: white;
     border-radius: 5px;
 }
 
 QPushButton:hover {
-    background-color: #868E96;
+    background-color: #20C997;
 }
 """)
-            self.btn_screenshoot.setFixedSize(LARGEUR_BOUTON, HAUTEUR_BOUTON)
-            layout_boutons.addWidget(self.btn_screenshoot)
+            self.btn_screenshot.setFixedSize(LARGEUR_BOUTON, HAUTEUR_BOUTON)
+            layout_boutons.addWidget(self.btn_screenshot)
 
-            self.btn_quitter = QPushButton("Quitter")
-            self.btn_quitter.clicked.connect(self.quitter_application)
-            self.btn_quitter.setStyleSheet("""
+            self.btn_quitter_carte = QPushButton("Quitter")
+            self.btn_quitter_carte.clicked.connect(self.quitter_application)
+            self.btn_quitter_carte.setStyleSheet("""
 QPushButton {
-    background-color: #4B4F52;
+    background-color: #C92A2A;
     color: white;
     border-radius: 5px;
 }
 
 QPushButton:hover {
-    background-color: #868E96;
+    background-color: #F03E3E;
 }
 """)
-            self.btn_quitter.setFixedSize(LARGEUR_BOUTON, HAUTEUR_BOUTON)
-            layout_boutons.addWidget(self.btn_quitter)
+            self.btn_quitter_carte.setFixedSize(LARGEUR_BOUTON, HAUTEUR_BOUTON)
+            layout_boutons.addWidget(self.btn_quitter_carte)
 
             layout.addLayout(layout_boutons)
-
             widget_carte.setLayout(layout)
             self.stacked_widget.addWidget(widget_carte)
             self.stacked_widget.setCurrentWidget(widget_carte)
-            widget_carte.setStyleSheet("background-color: black;")
-
         except Exception as e:
-            self.afficher_message_erreur("Erreur lors de la récupération des données GPS de l'image")
+            self.afficher_message_erreur(str(e))
 
-    def screenshoot_google_map(self):
-        if not hasattr(self, 'web_view'):
-            return
+    def screenshot_googlemap(self):
+        save_path, _ = QFileDialog.getSaveFileName(self, "Enregistrer le screenshot", "", "JPEG Files (*.jpg)")
+        if save_path:
+            self.web_view.grab().save(save_path, "jpg")
 
-        def capture_callback(image):
-            file_path, _ = QFileDialog.getSaveFileName(self, "Enregistrer l'image", "", "Images (*.jpg)")
-            if file_path:
-                try:
-                    image.save(file_path, "JPG")
-                except Exception as e:
-                    self.afficher_message_erreur("Une erreur s'est produite lors de l'enregistrement de la capture d'écran.")
-
-        self.web_view.grab().toImage().save('screenshot.jpg')
-        image = QPixmap('screenshot.jpg')
-        capture_callback(image)
-
-    def parcourir(self):
-        dialogue_fichier = QFileDialog()
-        dialogue_fichier.setFileMode(QFileDialog.ExistingFile)
-        dialogue_fichier.setNameFilter("Images (*.jpeg *.jpg *.tiff *.tif *.raw)")
-        
-        if dialogue_fichier.exec_():
-            fichiers_selectionnes = dialogue_fichier.selectedFiles()
-            if not fichiers_selectionnes:
-                return
-            self.chemin_fichier = fichiers_selectionnes[0]
-            image_selectionnee = QPixmap(self.chemin_fichier)
-            if image_selectionnee.isNull():  # Vérifier si l'image n'a pas pu être chargée
-                self.afficher_message_erreur("Erreur lors de l'importation de l'image.\nCette image n'est pas compatible avec le programme.")
-                return
-            self.afficher_donnees_exif()
-
-    def recuperer_donnees_exif(self, chemin_image):
-        with open(chemin_image, 'rb') as f:
-            tags = exifread.process_file(f)
-        # Filtrer les tags MakerNote
-        tags_filtres = {tag: valeur for tag, valeur in tags.items() if "MakerNote" not in tag}
-        return tags_filtres
-
-    def afficher_donnees_exif(self):
-        def afficher_donnees_thread():
-            donnees_exif = self.recuperer_donnees_exif(self.chemin_fichier)
-            infos_exif = ""
-            # Groupes de données Exif
-            groupes_exif = {
-                "======== Image ========": [],
-                "======== Appareil Photo ========": [],
-                "======== GPS ========": [],
-                "Autres": []
-            }
-            # Classification des tags Exif
-            for tag, valeur in donnees_exif.items():
-                if "MakerNote" not in tag:  # Ne pas inclure les tags MakerNote
-                    if "Image" in tag:
-                        groupes_exif["======== Image ========"].append(f"{self.traduire_propriete(tag)}: <font color='yellow'>{valeur}</font>\n")
-                    elif "GPS" in tag:
-                        groupes_exif["======== GPS ========"].append(f"{self.traduire_propriete(tag)}: <font color='yellow'>{valeur}</font>\n")
-                    elif "EXIF" in tag:
-                        groupes_exif["======== Appareil Photo ========"].append(f"{self.traduire_propriete(tag)}: <font color='yellow'>{valeur}</font>\n")
-                    else:
-                        groupes_exif["Autres"].append(f"{self.traduire_propriete(tag)}: <font color='yellow'>{valeur}</font>\n")
-            # Concaténer les données de chaque groupe
-            for titre_groupe, donnees_groupe in groupes_exif.items():
-                if donnees_groupe:
-                    infos_exif += f"<b>{titre_groupe}</b><br>"  # Utiliser <b> pour mettre en gras le titre du groupe
-                    for donnee in donnees_groupe:
-                        infos_exif += f"{donnee}<br>"  # Ajouter chaque propriété Exif avec un saut de ligne
-                    infos_exif += "<br>"  # Ajouter un saut de ligne entre chaque groupe
-            self.signaux.afficher_donnees_exif_signal.emit(infos_exif)
-
-        threading.Thread(target=afficher_donnees_thread).start()
-
-    def afficher_donnees_exif_event(self, infos_exif):
-        self.txt_infos_exif.setHtml(infos_exif)
-        image_selectionnee = QPixmap(self.chemin_fichier).scaled(300, 300, Qt.KeepAspectRatio)
-        self.lbl_image_selectionnee.setPixmap(image_selectionnee)
-        self.btn_rechercher.setEnabled(True)
-        self.btn_sauvegarder.setEnabled(True)
-        self.btn_rechercher.setStyleSheet("""
-QPushButton {
-    background-color: #4B4F52;
-    color: white;
-    border-radius: 5px;
-}
-
-QPushButton:hover {
-    background-color: #868E96;
-}
-""")
-        self.btn_sauvegarder.setStyleSheet("""
-QPushButton {
-    background-color: #4B4F52;
-    color: white;
-    border-radius: 5px;
-}
-
-QPushButton:hover {
-    background-color: #868E96;
-}
-""")
+    def afficher_vue_principale(self):
+        self.stacked_widget.setCurrentIndex(0)
 
     def afficher_message_erreur(self, message):
-        msg_box = QMessageBox()
-        msg_box.setIcon(QMessageBox.Critical)
-        msg_box.setWindowTitle("Erreur")
-        msg_box.setText(message)
-        msg_box.exec_()
+        msg = QMessageBox()
+        msg.setIcon(QMessageBox.Critical)
+        msg.setText("Erreur")
+        msg.setInformativeText(message)
+        msg.setWindowTitle("Erreur")
+        msg.exec_()
+
+    def quitter_application(self):
+        sys.exit()
+
+    def sauvegarder_donnees(self):
+        if self.chemin_fichier == "":
+            self.afficher_message_erreur("Veuillez d'abord parcourir une photo")
+            return
+
+        nom_fichier = os.path.basename(self.chemin_fichier)
+        nom_fichier_sans_extension = os.path.splitext(nom_fichier)[0]
+        nom_fichier_donnees = f"{nom_fichier_sans_extension}_donnees_exif.txt"
+        
+        save_path, _ = QFileDialog.getSaveFileName(self, "Enregistrer les données Exif", nom_fichier_donnees, "Text Files (*.txt)")
+
+        if save_path:
+            chemin_sauvegarde = save_path
+
+            try:
+                with open(chemin_sauvegarde, "w") as f:
+                    f.write(self.txt_infos_exif_col1.toPlainText() + "\n")
+                    f.write(self.txt_infos_exif_col2.toPlainText() + "\n")
+                    f.write(self.txt_infos_exif_col3.toPlainText() + "\n")
+                    f.write(self.txt_infos_exif_col4.toPlainText() + "\n")
+                self.afficher_message_information("Données Exif sauvegardées avec succès")
+            except Exception as e:
+                self.afficher_message_erreur(str(e))
+
+    def parcourir(self):
+        chemin_fichier, _ = QFileDialog.getOpenFileName(self, "Choisir une photo", "", "Images (*.jpg *.jpeg *.png *.gif)")
+        if chemin_fichier:
+            self.chemin_fichier = chemin_fichier
+            self.afficher_image()
+            self.effacer_donnees_exif()
+            threading.Thread(target=self.afficher_donnees_exif).start()
+            self.btn_geolocaliser.setEnabled(True)
+            self.btn_geolocaliser.setStyleSheet("""
+QPushButton {
+    background-color: #1971C2;
+    color: white;
+    border-radius: 5px;
+}
+
+QPushButton:hover {
+    background-color: #228BE6;
+}
+""")
+            self.btn_sauvegarder.setEnabled(True)
+            self.btn_sauvegarder.setStyleSheet("""
+QPushButton {
+    background-color: #099268;
+    color: white;
+    border-radius: 5px;
+}
+
+QPushButton:hover {
+    background-color: #20C997;
+}
+""")
+
+    def afficher_image(self):
+        pixmap = QPixmap(self.chemin_fichier)
+        if pixmap.width() > 200:
+            pixmap = pixmap.scaledToWidth(200, Qt.SmoothTransformation)
+        self.lbl_image_selectionnee.setPixmap(pixmap)
+        self.lbl_image_selectionnee.setAlignment(Qt.AlignCenter)
+
+    def afficher_message_information(self, message):
+        msg = QMessageBox()
+        msg.setIcon(QMessageBox.Information)
+        msg.setText("Information")
+        msg.setInformativeText(message)
+        msg.setWindowTitle("Information")
+        msg.exec_()
+
+    def effacer_donnees_exif(self):
+        self.txt_infos_exif_col1.clear()
+        self.txt_infos_exif_col2.clear()
+        self.txt_infos_exif_col3.clear()
+        self.txt_infos_exif_col4.clear()
+
+    def afficher_donnees_exif(self):
+        donnees_exif = self.recuperer_donnees_exif(self.chemin_fichier)
+        groupes_exif = {
+            "Informations sur l'image": [],
+            "Réglages de l'appareil photo": [],
+            "Données temporelles": [],
+            "Géolocalisation": []
+        }
+        for tag, valeur in donnees_exif.items():
+            if "MakerNote" not in tag:
+                if "Image" in tag:
+                    groupes_exif["Informations sur l'image"].append(f"{self.traduire_propriete(tag)}: <font color='yellow'>{valeur}</font>\n")
+                elif "GPS" in tag:
+                    groupes_exif["Géolocalisation"].append(f"{self.traduire_propriete(tag)}: <font color='yellow'>{valeur}</font>\n")
+                elif "EXIF" in tag:
+                    groupes_exif["Réglages de l'appareil photo"].append(f"{self.traduire_propriete(tag)}: <font color='yellow'>{valeur}</font>\n")
+                else:
+                    groupes_exif["Données temporelles"].append(f"{self.traduire_propriete(tag)}: <font color='yellow'>{valeur}</font>\n")
+        
+        col_index = 0
+        for titre_groupe, donnees_groupe in groupes_exif.items():
+            if donnees_groupe:
+                for donnee in donnees_groupe:
+                    if col_index == 0:
+                        self.txt_infos_exif_col1.append(donnee)
+                    elif col_index == 1:
+                        self.txt_infos_exif_col2.append(donnee)
+                    elif col_index == 2:
+                        self.txt_infos_exif_col3.append(donnee)
+                    else:
+                        self.txt_infos_exif_col4.append(donnee)
+                    col_index = (col_index + 1) % 4
+
 
     def traduire_propriete(self, tag):
-        # Traduire les noms des propriétés Exif en français si nécessaire
         traductions = {
             "Image Make": "Fabricant de l'image",
             "Image Model": "Modèle de l'image",
@@ -401,44 +471,30 @@ QPushButton:hover {
             "EXIF LensMake": "Fabricant de l'objectif",
             "EXIF LensModel": "Modèle de l'objectif",
             "EXIF Tag 0xA460": "Tag 0xA460",
+            "EXIF UserComment": "Commentaire de l'utilisateur",
+            "Image ImageWidth": "Largeur de l'image",
+            "Image ImageLength": "Longueur de l'image",
+            "Image SamplesPerPixel": "Échantillons d'images par pixel",
+            "Thumbnail XResolution":"Vignette XResolution",
+            "Thumbnail JPEGInterchangeFormatLength":"Longueur du format d'échange JPEG des vignettes",
+            "Image BitsPerSample":"Bits d'image par échantillon",
+            "Thumbnail YResolution":"Vignette YResolution",
+            "JPEGThumbnail":"Miniature JPEG",
+            "Image PhotometricInterpretation":"Image Interprétation photométrique",
+            "Thumbnail ResolutionUnit":"Unité de résolution des vignettes"
         }
         return traductions.get(tag, tag)
 
-    def sauvegarder_donnees(self):
-        if self.chemin_fichier == "":
-            self.afficher_message_erreur("Veuillez d'abord parcourir une photo")
-            return
+    def recuperer_donnees_exif(self, chemin_fichier):
+        with open(chemin_fichier, 'rb') as f:
+            tags = exifread.process_file(f)
+            return {tag: str(value) for tag, value in tags.items()}
 
-        try:
-            # Demander à l'utilisateur l'emplacement de sauvegarde
-            chemin_fichier_sauvegarde, _ = QFileDialog.getSaveFileName(self, "Enregistrer les données Exif", "", "Fichiers texte (*.txt)")
-
-            if chemin_fichier_sauvegarde:
-                # Sauvegarder les données Exif dans un fichier texte
-                donnees_exif = self.recuperer_donnees_exif(self.chemin_fichier)
-                with open(chemin_fichier_sauvegarde, 'w') as f:
-                    for tag, valeur in donnees_exif.items():
-                        tag_fr = self.traduire_propriete(tag)  # Traduire le tag en français
-                        f.write(f"{tag_fr}: {valeur}\n")
-
-        except Exception as e:
-            self.afficher_message_erreur("Une erreur s'est produite lors de la sauvegarde des données Exif")
-
-    def afficher_message_information(self, message):
-        msg_box = QMessageBox()
-        msg_box.setIcon(QMessageBox.Information)
-        msg_box.setWindowTitle("Information")
-        msg_box.setText(message)
-        msg_box.exec_()
-
-    def afficher_vue_principale(self):
-        self.stacked_widget.setCurrentIndex(0)
-
-    def quitter_application(self):
-        sys.exit()
-
-if __name__ == "__main__":
-    app = QApplication(sys.argv)
+def main():
+    app = QApplication([])
     fenetre = Fenetre()
     fenetre.show()
     sys.exit(app.exec_())
+
+if __name__ == '__main__':
+    main()

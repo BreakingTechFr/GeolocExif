@@ -1,3 +1,4 @@
+PySide2=
 exifread
-gpsphoto
-PySide2
+GPSPhoto
+pyautogui

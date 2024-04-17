@@ -4,9 +4,10 @@ Ce programme permet de parcourir une photo, extraire les données GPS de ses mé
 
 ## Fonctionnalités
 
-- Parcourir une photo depuis votre système de fichiers.
-- Extraire les données GPS des métadonnées EXIF de la photo.
-- Ouvrir une carte Google Maps montrant l'emplacement géographique de la photo.
+- Affichage des données Exif des images sélectionnées.
+- Géolocalisation des images avec des informations GPS.
+- Sauvegarde des données Exif dans un fichier texte.
+- Capture d'écran de la carte Google Maps affichant la géolocalisation.
 
 ## Prérequis
 
