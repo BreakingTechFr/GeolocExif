@@ -1,17 +1,17 @@
 # GeoLocExif
 
-![Capture d’écran 2024-04-17 à 03 44 55](https://github.com/BreakingTechFr/GeolocExif/assets/128238555/e2874899-4854-405b-9908-b63874203053)
+<img width="1250" alt="2024-04-17_04-05-03" src="https://github.com/BreakingTechFr/GeolocExif/assets/128238555/a2fe54b0-d6cf-4473-885a-08bd839c6c53">
 
 Ce programme permet de parcourir une photo, extraire les données GPS de ses métadonnées EXIF et ouvrir une carte Google Maps affichant l'emplacement géographique de la photo.
 
 ## Fonctionnalités
 
-![Capture d’écran 2024-04-17 à 03 45 08](https://github.com/BreakingTechFr/GeolocExif/assets/128238555/ae1bb106-1a61-49d7-a4ce-51a8a355e039)
-
 - Affichage des données Exif des images sélectionnées en *.jpg *.jpeg *.png *.gif
 - Géolocalisation des images avec des informations GPS
 - Sauvegarde des données Exif dans un fichier texte *.txt
 - Sauvegarde une capture d'écran de la carte Google Maps affichant la géolocalisation en *.jpg
+
+<img width="1250" alt="2024-04-17_04-05-35" src="https://github.com/BreakingTechFr/GeolocExif/assets/128238555/155ec1fe-a523-451c-ae9d-50bae5c27533">
 
 ## Prérequis
 
