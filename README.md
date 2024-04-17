@@ -6,7 +6,7 @@ Ce programme permet de parcourir une photo, extraire les données GPS de ses mé
 
 ## Fonctionnalités
 
-- Affichage des données Exif des images sélectionnées en *.jpg *.jpeg *.png *.gif
+- Affichage des données Exif de l'image sélectionnée en *.jpg *.jpeg *.png ou *.gif
 - Géolocalisation des images avec des informations GPS
 - Sauvegarde des données Exif dans un fichier texte *.txt
 - Sauvegarde une capture d'écran de la carte Google Maps affichant la géolocalisation en *.jpg
