@@ -8,7 +8,7 @@ Ce programme permet de parcourir une photo, extraire les données GPS de ses mé
 
 ![Capture d’écran 2024-04-17 à 03 45 08](https://github.com/BreakingTechFr/GeolocExif/assets/128238555/ae1bb106-1a61-49d7-a4ce-51a8a355e039)
 
-- Affichage des données Exif des images sélectionnées.
+- Affichage des données Exif des images sélectionnées en JPG.
 - Géolocalisation des images avec des informations GPS.
 - Sauvegarde des données Exif dans un fichier texte.
 - Capture d'écran de la carte Google Maps affichant la géolocalisation.
