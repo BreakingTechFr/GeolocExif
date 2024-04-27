@@ -75,7 +75,9 @@ python geoexif.py
 - Cliquez sur le bouton "Choisir une photo..." pour sélectionner une photo.
 - Une fois la photo sélectionnée, cliquez sur le bouton "Geolocaliser" pour ouvrir une carte Google Maps montrant l'emplacement géographique de la photo.
 
-## Auteur
+## Suivez-nous
 
-[BreakingTech](https://github.com/BreakingTechFr)
-
+- [@breakingtechfr](https://twitter.com/BreakingTechFR) sur Twitter.
+- [Facebook](https://www.facebook.com/BreakingTechFr/) likez notre page.
+- [Instagram](https://www.instagram.com/breakingtechfr/) taguez nous sur vos publications !
+- [Discord](https://discord.gg/VYNVBhk) pour parler avec nous !
